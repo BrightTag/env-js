@@ -5,7 +5,7 @@
  * the script like a browser would
  */
 Envjs.scriptTypes = {
-	"": false, //anonymous/inline
+  "": false, //anonymous/inline
     "text/javascript"   :false,
     "text/envjs"        :true
 };
@@ -24,24 +24,19 @@ Envjs.onScriptLoadError = function(script, e){
  * @param {Object} script
  */
 Envjs.loadInlineScript = function(script){
-    if(script.ownerDocument.ownerWindow){	
-		//console.log('evaulating inline in script.ownerDocument.ownerWindow %s', 
-		//	script.ownerDocument.ownerWindow);
+    if(script.ownerDocument.ownerWindow){  
         Envjs.eval(
             script.ownerDocument.ownerWindow,
             script.text,
             'eval('+script.text.substring(0,16)+'...):'+new Date().getTime()
         );
     }else{
-		//console.log('evaulating inline in global %s',  __this__);
         Envjs.eval(
             __this__,
             script.text,
             'eval('+script.text.substring(0,16)+'...):'+new Date().getTime()
         );
     }
-    //console.log('evaluated at scope %s \n%s',
-    //    script.ownerDocument.ownerWindow.guid, script.text);
 };
 
 /**
@@ -59,7 +54,6 @@ Envjs.eval = function(context, source, name){};
  * @param {Object} parser
  */
 Envjs.loadLocalScript = function(script){
-    //console.log("loading script type %s \n source %s", script.type, script.src||script.text.substring(0,32));
     var types,
         src,
         i,
@@ -79,7 +73,7 @@ Envjs.loadLocalScript = function(script){
                 return false;
             }
         }
-    }else if(!Envjs.scriptTypes['']){	
+    }else if(!Envjs.scriptTypes['']){  
         //console.log('wont load anonymous script type ""');
         return false;
     }
@@ -87,12 +81,12 @@ Envjs.loadLocalScript = function(script){
     try{
         //console.log('handling inline scripts %s %s', script.src, Envjs.scriptTypes[""] );
         if(!script.src.length ){
-			if(Envjs.scriptTypes[""]){
-            	Envjs.loadInlineScript(script);
-	            return true;
-			}else{
-				return false;
-			}
+            if(Envjs.scriptTypes[""]){
+                Envjs.loadInlineScript(script);
+                return true;
+            }else{
+                return false;
+            }
         }
     }catch(e){
         console.log("Error loading script. %s", e);
@@ -100,25 +94,22 @@ Envjs.loadLocalScript = function(script){
         return false;
     }
 
+    var filterScriptCallbacks = function(callbacks) {
+      if(callbacks){
+          for(var src in callback){
+              if(script.src.match(src)){ callbacks[src](script); }
+          }
+      }
+    };
 
-    //console.log("loading allowed external script %s", script.src);
+    //lets you register a function to execute before the script is loaded
+    filterScriptCallbacks(Envjs.beforeScriptLoad);
 
-    //lets you register a function to execute
-    //before the script is loaded
-    if(Envjs.beforeScriptLoad){
-        for(src in Envjs.beforeScriptLoad){
-            if(script.src.match(src)){
-                Envjs.beforeScriptLoad[src](script);
-            }
-        }
-    }
     base = "" + script.ownerDocument.location;
-    //filename = Envjs.uri(script.src.match(/([^\?#]*)/)[1], base );
-    //console.log('loading script from base %s', base);
     filename = Envjs.uri(script.src, base);
     try {
-        xhr = new XMLHttpRequest();
-        xhr.open("GET", filename, false/*syncronous*/);
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", filename, false /*synchronous*/);
         //console.log("loading external script %s", filename);
         xhr.onreadystatechange = function(){
             //console.log("readyState %s", xhr.readyState);
@@ -136,15 +127,10 @@ Envjs.loadLocalScript = function(script){
         Envjs.onScriptLoadError(script, e);
         return false;
     }
-    //lets you register a function to execute
-    //after the script is loaded
-    if(Envjs.afterScriptLoad){
-        for(src in Envjs.afterScriptLoad){
-            if(script.src.match(src)){
-                Envjs.afterScriptLoad[src](script);
-            }
-        }
-    }
+
+    //lets you register a function to execute after the script is loaded
+    filterScriptCallbacks(Envjs.afterScriptLoad);
+
     return true;
 };
 
@@ -457,7 +443,7 @@ function __formToArray__(form, semantic) {
         if (!name) {
             continue;
         }
-		//console.log('serializing input %s', name);
+    //console.log('serializing input %s', name);
         if (semantic && form.clk && element.type === "image") {
             // handle image inputs on the fly when semantic == true
             if(!element.disabled && form.clk == element) {
@@ -473,14 +459,14 @@ function __formToArray__(form, semantic) {
         }
 
         value = __fieldValue__(element, true);
-		//console.log('input value is %s', value);
+    //console.log('input value is %s', value);
         if (value && value.constructor == Array) {
             jmax = value.length;
             for(j=0; j < jmax; j++){
                 array.push({name: name, value: value[j]});
             }
         } else if (value !== null && typeof value != 'undefined'){
-			//console.log('serializing form %s %s', name, value);
+      //console.log('serializing form %s %s', name, value);
             array.push({name: name, value: value});
         }
     }
@@ -647,7 +633,7 @@ function __fieldSerialize__(inputs, successful) {
 
     if (successful && (!name || element.disabled || type == 'reset' || type == 'button' ||
              (type == 'checkbox' || type == 'radio') &&  !element.checked ||
-			/*thatcher - submit buttons should count?*/
+      /*thatcher - submit buttons should count?*/
              (/*type == 'submit' || */type == 'image') &&
              element.form && element.form.clk != element || tag === 'select' &&
              element.selectedIndex === -1)) {
