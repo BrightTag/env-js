@@ -27,12 +27,6 @@ Envjs.uri = function(path, base) {
         return urlparse.urlnormalize(path);
     }
 
-    // interesting special case, a few very large websites use
-    // '//foo/bar/' to mean 'http://foo/bar'
-    if (path.match('^//')) {
-        path = 'http:' + path;
-    }
-
     // if base not passed in, try to get it from document
     // Ideally I would like the caller to pass in document.baseURI to
     //  make this more self-sufficient and testable
@@ -50,6 +44,14 @@ Envjs.uri = function(path, base) {
     if (!base) {
         base = 'file://' +  Envjs.getcwd() + '/';
     }
+
+    // interesting special case. Per RFC 2396#5.2 '//foo/bar/'
+    // has a relative scheme/protocol and should be derived from the base
+    if (path.match('^//')) {
+        var baseScheme = base.match(/^([a-z0-9+.-]+:)\/\//i);
+        path = (baseScheme ? baseScheme[1] : "http:") + path;
+    }
+
     // handles all cases if path is abosulte or relative to base
     // 3rd arg is "false" --> remove fragments
     var newurl = urlparse.urlnormalize(urlparse.urljoin(base, path, false));

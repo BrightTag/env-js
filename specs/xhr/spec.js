@@ -11,26 +11,37 @@ test('XMLHttpRequest Interfaces Available', function(){
 var expected_path_a = 'specs/xhr/index.html';
 var expected_path_b = 'specs/xhr/';
 var url = SETTINGS.AJAX_BASE +'specs/fixtures/simple.txt',
-	absolute_url = '/specs/fixtures/simple.txt';
-    
+  absolute_url = '/specs/fixtures/simple.txt';
+
 // mock the global document object if not available
 try{
     document;
 }catch(e){
     console.log('mocking global document object.');
-	
+  
     window = document = new HTMLDocument(new DOMImplementation());
     
     console.log('mocking global document location.');
-    location = new Location(
-		Envjs.uri(expected_path_a, SETTINGS.AJAX_BASE),
-        document
-	);
+    var expected_uri = Envjs.uri(expected_path_a, SETTINGS.AJAX_BASE);
+    location = new Location(expected_uri, document);
     document.baseURI = location.href;
     location.reload();
-	
+  
     console.log('WARNING: AJAX TESTS WILL FAIL WITHOUT A SERVER AND local_settings.js');
 }
+
+test('Envjs.uri', function() {
+    equals("http://foo.bar/", Envjs.uri("//foo.bar", "http://bar.baz"));
+    equals("https://foo.bar/", Envjs.uri("//foo.bar", "https://bar.baz"));
+    equals("http://foo.bar/", Envjs.uri("//foo.bar", null));
+
+    var original_base_uri = document.baseURI;
+    document.baseURI = "https://bar.baz";
+
+    equals("https://foo.bar/", Envjs.uri("//foo.bar", null));
+
+    document.baseURI = original_base_uri;
+});
 
 test('Location', function(){
     
@@ -132,7 +143,7 @@ test('XMLHttpRequest async', function(){
 });
 
 test('xhr for relative path', function(){
-	var xhr;
+  var xhr;
         
     xhr = new XMLHttpRequest();
     equals(xhr.readyState, 0, '.readyState');
@@ -143,7 +154,7 @@ test('xhr for relative path', function(){
     
     xhr.open("GET", absolute_url, true);
     equals(xhr.readyState, 1, '.readyState');
-	xhr.onreadystatechange = function(){
+  xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
             equals(xhr.readyState, 4, '.readyState');
             equals(xhr.responseText, 'Hello World', '.responseText');
